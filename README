@@ -1,0 +1,214 @@
+Test Vectors
+------------
+
+The des.test file is a set of 291 test vectors from NBS Special Pub 500-20 'Validating the Correctness of Hardware Implementations of the NBS Data Encryption Standard' found archived at  https://ia801704.us.archive.org/35/items/validatingcorrec00gait/validatingcorrec00gait.pdf .
+
+The des.test file has formatting used for automated loading for a des program and as source for test vectors for VHDL testbenches of DES implementations.
+It has whitespace formatting to support comments, a cryptographic mode (encrypt/decrypt) and a first character space found on triplets (key, input, output).
+
+The desvec.c generates VHDL design files plain_vector.vhdl, key_vector.vhdl, encrypt_vector.vhdl and cipher_vector.vhdl. The generated VHDL files are missing the 'creative spark' necessary for copyright protection in the United States. At best they would be derivative works of the desvec.c program and would be governed as such by the copyright of desvec.c.
+
+The pipelined DES implementation is derived in part from a simple DES implementation using an 8 bit interface. While not synthesis eligible without modification that implementation could be rendered in approximately 4700 NAND gate equivalents.  The pipelined DES would be on the close order of 70K gates while a Triple DES version of that would be approximately three times the size.
+
+Note that the test vectors (VHDL_code_generators des.test) are given as hex values for input bytes in big endian order which supports a byte wide interface for the Initial Permutation and Permuted Choice 1 (shown below). Also note the bit in byte ordering in both permutations is big endian. Using an other than byte wide interface to a conforming DES implementation requires awareness of the endian model of the host interface byte in word (here 64 bit) representation to maintain byte order compatibility. 
+
+Debugging
+---------
+
+A JavaScript implementation of DES that displays intermediary values for rounds of the DES can be found on the web page JavaScript DES Example
+http://styere.xyz/JS-DES.html .
+
+To allow user defined key values the 10/27/06 modification not allowing a different key can be undone by patching JS-DES.html:
+
+623c623
+<         <td><input name="key" value="0000000000000000" size="25" type="text"></td>
+---
+>         <td><input name="key" value="3b3898371520f75e" readonly="readonly" size="25" type="text"></td>
+627c627
+<         <td><input name="keyb" value="0000000000000000" size="25" type="text"></td>
+---
+>         <td><input name="keyb" value="922fb510c71f436e" readonly="readonly" size="25" type="text"></td>
+
+Essentially removing the readonly attribute for key and keyb strings as well as providing zero values.
+
+The previous location https://styere.000webhostapp.com/JS-DES.html link is forwarded to the above link. The original location found at Eugene Styer's education institution does not provide forwarding.
+
+When an implementation uses ascending order ranges left to right the binary patterns found in the JS-DES output are directly applicable to troubleshooting an implementation.
+
+Initial Permutation, Inverse Initial Permutation and Permuted Choice 1
+----------------------------------------------------------------------
+
+These are all dependent on Endian order resulting from supplanting the original byte wide interface to DES (found in the original patents) with 64 bit data paths.
+
+Also conventional little endian bit in byte ordering (7 downto 0, msb downto lsb) is taken into account in the permutations.
+
+
+Initial Permutation
+
+
+   Big    MSB7     Input Block (64 bits)                    
+   End    Bit                                      Left  Register (32 bits)
+    2------6-------58 50 42 34 26 18 10  2            1  2  3  4  5  6  7  8
+    4------4-------60 52 44 36 28 20 12  4            9 10 11 12 13 14 15 16
+    6------2-------62 54 46 38 30 22 14  6           17 18 19 20 21 22 23 24
+    8------0-------64 56 48 40 32 24 16  8           25 26 27 28 29 30 31 32
+                                                      
+                                                   Right Register (32 bits)
+    1------7-------57 49 41 33 25 17  9  1            1  2  3  4  5  6  7  8
+    3------5-------59 51 43 35 27 19 11  3            9 10 11 12 13 14 15 16
+    5------3-------61 53 45 37 29 21 13  5           17 18 19 20 21 22 23 24
+    7------1-------63 55 47 39 31 23 15  7           25 26 27 28 29 30 31 32
+ 
+  Input Byte        8  7  6  5  4  3  2  1
+
+                   Illustration 1.  Initial Permutation
+
+You can see that in a byte wide interface there are only 8 wires in the Initial Permutation, and notably the bit in byte ordering commonly used is different than found in FIPS 46.
+
+
+Inversion Initial Permutation
+
+You can see that the Inversion Initial Permutation is identical to the Initial Permutation if the Left and Right Blocks are first order reversed:
+
+            Output (R16L16)               Standard      Big
+    Right Register (32 bits)       Block  (64 bits)                Bit      End
+ 
+     1  2  3  4  5  6  7  8          1  2  3  4  5  6  7  8---------6--------2
+     9 10 11 12 13 14 15 16          9 10 11 12 13 14 15 16---------4--------4
+    17 18 19 20 21 22 23 24         17 18 19 20 21 22 23 24---------2--------6
+    25 26 27 28 29 30 31 32         25 26 27 28 29 30 31 32---------0--------8
+ 
+    Left Register (32 bits)
+ 
+     1  2  3  4  5  6  7  8         33 34 35 36 37 38 39 40---------7--------1
+     9 10 11 12 13 14 15 16         41 42 43 44 45 46 47 48---------5--------3
+    17 18 19 20 21 22 23 24         49 50 51 52 53 54 55 56---------3--------5
+    25 26 27 28 29 30 31 32         57 58 59 60 61 62 63 64---------1--------7
+ 
+    Output Byte                      8  7  6  5  4  3  2  1
+
+                    Illustration 2:  Inverse Initial Permutation 
+
+The L and R registers would be both serially shifted in and out as well as parallel loaded and parallel out in the simplest implementation, sharing a byte wide bidirectional interface to host. You'd use the same 8 wires.
+
+You can see that the Inverse Initial Permutation (shown as IP-1 in FIPS Pub 46-3) is turned 90 degrees in the above illustration:
+
+From FIPS Pub 46 (annotated to show byte and bit order):
+
+               IP-1
+                                       Output Byte
+    40  8 48 16 56 24 64 32                 1
+    39  7 47 15 55 23 63 31                 2
+    38  6 46 14 54 22 62 30                 3
+    37  5 45 13 53 21 61 29                 4
+    36  4 44 12 52 20 60 28                 5
+    35  3 43 11 51 19 59 27                 6
+    34  2 42 10 50 18 58 26                 7
+    33  1 41  9 49 17 57 25                 8
+     1  2  3  4  5  6  7  8 Output Bit
+
+
+Permuted Choice 1
+
+PC1 performs a similar function loading the C and D 28 bit registers
+
+
+Port    MSB7                                                                
+Bits     Bits                                                           
+                           
+                Input   (CD)                            C
+                        Block, 64 bits                  Block (28 bits)
+ 
+1--------7------57 49 41 33 25 17  9  1         MS    1  2  3  4  5  6  7  8
+2--------6------58 50 42 34 26 18 10  2               9 10 11 12 13 14 15 16
+3--------5------59 51 43 35 27 19 11  3              17 18 19 20 21 22 23 24
+4--------4------60 52 44 36 ----------- (C(28))      25 26 27 28
+ 
+                                                        D
+                                                        Block (28 bits)
+ 
+7--------1------63 55 47 39 31 23 15  7              1  2  3  4  5  6  7  8
+6--------2------62 54 46 38 30 22 14  6              9 10 11 12 13 14 15 16
+5--------3------61 53 45 37 29 21 13  5             17 18 19 20 21 22 23 24
+4-------(D(25)--------------28 20 12  4                         25 26 27 28
+ 
+8--------0------64 56 48 40 32 24 16  8         LS      (parity)
+ 
+Input Byte      8  7  6  5  4  3  2   1 
+
+                   Illustration 3.  Permuted Choice 1
+ 
+Note that bit 4 is used as input for both C and D.  This implies that C(28)
+output is used as the serial input to D(25).  The least significant bit is
+used for odd parity.
+
+The C, D registers can be implemented as shifting both left and right
+for both encryption and decryption  (C and D registers shift in opposite
+directions as specified by PC2).  They require parallel outputs for 
+Permuted Choice 2. 
+
+In a pipelined DES we only perform the Initial Permutation and Permuted Choice 1 on the input end of the pipeline, and the Inverse Initial Permutation on the output end.
+
+
+The Cryptographic Function f(R,K)
+---------------------------------
+
+The f(R,K) function expands the Right block via the E Expansion permutation, which is XORed with Permuted Choice 2 selected key according to the shift schedule and round number.
+
+Permuted Choice 2
+
+The C and D registers are separately rotated for each round according to the Key Schedule. The direction of shift is dependent on encryption versus decryption. The C and D registers are intended to be use for sequential block encryption or decryption and the position of the Permuted Choice 2 selection permutation tap-offs is by default the key for 16th round. As a consequence the C and D registers require pre-shifting for encryption.
+
+As a consequence of feeding the key in from the head of the pipeline the last stage C and D register outputs are not used. Describing the DEs pipeline with identical hardware for each round separated by pipeline registers we'd expect synthesis to eat unused outputs and their registers. The 16th stage is a separate entity without the key schedule and C and D outputs.
+
+E Permutation
+
+The Expansion Permutation expands R to 48 bits to XOR with 48 bits of selected key provided by PC2. These 48 inputs are provided in order to 8 S Boxes.
+
+S Boxes
+
+The order of inputs to the 8 S boxes means the C register influences S Boxes 1 - 4 output values while the D register influences S Boxes 5 - 8.
+
+S Boxes are organized as four columns of 16 values where each column contains all 16 possible 4 bit values.
+
+P Permutation
+
+The output of the 8 S Boxes is passed through the P Permutation which mixes R bit influence across the width of R over successive rounds, whitening the range of result values along with mixing C and D register PC2 selected bits across successive rounds. 
+
+Next R, Next L
+
+The P output of f(R,K) is XORed with L to produce the next R value.
+
+The R value becomes the next L value.
+
+DES depends on the Left and Right swap after round 16 and the reversed key schedule (C and D shift direction) to allow the Feistal Network to 'un-peel' successive rounds for decryption.
+
+
+C Programs
+----------
+
+These C programs are capable of being compiled with a C99 compliant C compiler in a POSIX environment.
+
+There are various versions of S Box VHDL cdde generating C programs in various modeling conventions. These have all been verified.
+
+desvec64.c    - produces FIPS Special Pub 500-20 test vectors 
+desvec.c      - byte wide interface (the original version)
+endian.c
+keytab.c      - produces tables showing relationship of round keys
+sbox_and_or.c -  These produce VHDL S Boxes in various modeling styles.
+sbox_case.c 
+sbox_lookup.c
+sbox_swtich.c
+sboxes.c
+
+des.test    - the FIPS Spec Pub test vectors, a derivative of a public work.
+
+They are found in the code_tools subdirectory of the distribution archive.
+
+VHDL Design Files
+-----------------
+
+The sbox1.vhdl - sbox2.vhdl are from a previous DES implementation. The rest of the design effort is entirely new.
+
+
+

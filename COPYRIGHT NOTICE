@@ -1,0 +1,36 @@
+Copyright 2018  David G. Koontz 
+   All rights reserved.
+   
+This Pipelined DES (Digital Encryption Standard) Digital Encryption Algorithm consists of the following VHDL source files for which copyright is claimed:
+
+    frk.vhdl
+    pipe_stage.vhdl
+    last_stage.vhdl
+    pipelined_des.vhdl
+    input_vector.vhdl 
+    key_vector.vhdl
+    output_vector.vhdl 
+    encrypt_vector.vhdl
+    pipelined_des_tb.vhdl
+
+As well as the C programs found in the code_tools subdirectory for which copyright is claimed:
+
+    desvec.c
+    desvec64.c
+    keytab.c
+    sbox_and_or.c
+    sbox_case.c
+    sbox_lookup.c     -- used to generate sbox1.vhdl - sbox8.vhdl
+    sbox_switch.c
+    sboxes.c
+
+
+These files as well as ancillary files (Makefile, etc.)  are distributed under the terms of the GNU Public License, GPLv3 a copy of which is included in the distribution and explains your rights as a recipient of this distribution to redistribute and/or create derivative works.
+
+The test vectors contained in input_vector.vhdl, key_vector.vhdl,  output_vector.vhdl and encrypt_vector.vhdl are derived from FIPS Special Pub 500-20, a government work without copyright and generated programmatically from desvec64.c, lacking the the necessary creative spark to claim copyright protection.
+
+The resulting binary from ghdl elaboration is covered under the version of the GPL the particular version of ghdl is distributed under, containing a linked copy of the ghdl run time library.
+
+The program endian.c is not sufficiently expressive while containing non-original expression and no copyright is claimed.
+
+
