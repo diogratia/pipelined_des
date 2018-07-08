@@ -184,8 +184,8 @@ The R value becomes the next L value.
 DES depends on the Left and Right swap after round 16 and the reversed key schedule (C and D shift direction) to allow the Feistal Network to 'un-peel' successive rounds for decryption.
 
 
-C Programs
-----------
+C Programs found in code_tools subdirectory
+-------------------------------------------
 
 These C programs are capable of being compiled with a C99 compliant C compiler in a POSIX environment.
 
@@ -208,7 +208,7 @@ They are found in the code_tools subdirectory of the distribution archive.
 VHDL Design Files
 -----------------
 
-The sbox1.vhdl - sbox2.vhdl are from a previous DES implementation. The rest of the design effort is entirely new.
+The sbox1.vhdl - sbox8.vhdl are from a previous DES implementation. The rest of the design effort is entirely new.
 
 
 
