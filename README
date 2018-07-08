@@ -1,24 +1,47 @@
 Test Vectors
 ------------
 
-The des.test file is a set of 291 test vectors from NBS Special Pub 500-20 'Validating the Correctness of Hardware Implementations of the NBS Data Encryption Standard' found archived at  https://ia801704.us.archive.org/35/items/validatingcorrec00gait/validatingcorrec00gait.pdf .
+The des.test file is a set of 291 test vectors from NBS Special Pub 500-20
+'Validating the Correctness of Hardware Implementations of the NBS Data
+Encryption Standard' found archived at
+https://ia801704.us.archive.org/35/items/validatingcorrec00gait/validatingcorrec00gait.pdf .
 
-The des.test file has formatting used for automated loading for a des program and as source for test vectors for VHDL testbenches of DES implementations.
-It has whitespace formatting to support comments, a cryptographic mode (encrypt/decrypt) and a first character space found on triplets (key, input, output).
+The des.test file has formatting used for automated loading for a des program
+and as source for test vectors for VHDL testbenches of DES implementations.
+It has whitespace formatting to support comments, a cryptographic mode
+(encrypt/decrypt) and a first character space found on triplets (key, input,
+output).
 
-The desvec.c generates VHDL design files plain_vector.vhdl, key_vector.vhdl, encrypt_vector.vhdl and cipher_vector.vhdl. The generated VHDL files are missing the 'creative spark' necessary for copyright protection in the United States. At best they would be derivative works of the desvec.c program and would be governed as such by the copyright of desvec.c.
+The desvec.c generates VHDL design files plain_vector.vhdl, key_vector.vhdl,
+encrypt_vector.vhdl and cipher_vector.vhdl. The generated VHDL files are
+missing the 'creative spark' necessary for copyright protection in the United
+States. At best they would be derivative works of the desvec.c program and
+would be governed as such by the copyright of desvec.c.
 
-The pipelined DES implementation is derived in part from a simple DES implementation using an 8 bit interface. While not synthesis eligible without modification that implementation could be rendered in approximately 4700 NAND gate equivalents.  The pipelined DES would be on the close order of 70K gates while a Triple DES version of that would be approximately three times the size.
+The pipelined DES implementation is derived in part from a simple DES
+implementation using an 8 bit interface. While not synthesis eligible without
+modification that implementation could be rendered in approximately 4700 NAND
+gate equivalents. The pipelined DES would be on the close order of 70K gates
+while a Triple DES version of that would be approximately three times the
+size.
 
-Note that the test vectors (VHDL_code_generators des.test) are given as hex values for input bytes in big endian order which supports a byte wide interface for the Initial Permutation and Permuted Choice 1 (shown below). Also note the bit in byte ordering in both permutations is big endian. Using an other than byte wide interface to a conforming DES implementation requires awareness of the endian model of the host interface byte in word (here 64 bit) representation to maintain byte order compatibility. 
+Note that the test vectors (VHDL_code_generators des.test) are given as hex
+values for input bytes in big endian order which supports a byte wide
+interface for the Initial Permutation and Permuted Choice 1 (shown below).
+Also note the bit in byte ordering in both permutations is big endian. Using
+an other than byte wide interface to a conforming DES implementation requires
+awareness of the endian model of the host interface byte in word (here 64
+bit) representation to maintain byte order compatibility.
 
 Debugging
 ---------
 
-A JavaScript implementation of DES that displays intermediary values for rounds of the DES can be found on the web page JavaScript DES Example
+A JavaScript implementation of DES that displays intermediary values for
+rounds of the DES can be found on the web page JavaScript DES Example
 http://styere.xyz/JS-DES.html .
 
-To allow user defined key values the 10/27/06 modification not allowing a different key can be undone by patching JS-DES.html:
+To allow user defined key values the 10/27/06 modification not allowing a
+different key can be undone by patching JS-DES.html:
 
 623c623
 <         <td><input name="key" value="0000000000000000" size="25" type="text"></td>
@@ -29,18 +52,26 @@ To allow user defined key values the 10/27/06 modification not allowing a differ
 ---
 >         <td><input name="keyb" value="922fb510c71f436e" readonly="readonly" size="25" type="text"></td>
 
-Essentially removing the readonly attribute for key and keyb strings as well as providing zero values.
+Essentially removing the readonly attribute for key and keyb strings as well
+as providing zero values.
 
-The previous location https://styere.000webhostapp.com/JS-DES.html link is forwarded to the above link. The original location found at Eugene Styer's education institution does not provide forwarding.
+The previous location https://styere.000webhostapp.com/JS-DES.html link is
+forwarded to the above link. The original location found at Eugene Styer's
+education institution does not provide forwarding.
 
-When an implementation uses ascending order ranges left to right the binary patterns found in the JS-DES output are directly applicable to troubleshooting an implementation.
+When an implementation uses ascending order ranges left to right the binary
+patterns found in the JS-DES output are directly applicable to
+troubleshooting an implementation.
 
 Initial Permutation, Inverse Initial Permutation and Permuted Choice 1
 ----------------------------------------------------------------------
 
-These are all dependent on Endian order resulting from supplanting the original byte wide interface to DES (found in the original patents) with 64 bit data paths.
+These are all dependent on Endian order resulting from supplanting the
+original byte wide interface to DES (found in the original patents) with 64
+bit data paths.
 
-Also conventional little endian bit in byte ordering (7 downto 0, msb downto lsb) is taken into account in the permutations.
+Also conventional little endian bit in byte ordering (7 downto 0, msb downto
+lsb) is taken into account in the permutations.
 
 
 Initial Permutation
@@ -63,12 +94,15 @@ Initial Permutation
 
                    Illustration 1.  Initial Permutation
 
-You can see that in a byte wide interface there are only 8 wires in the Initial Permutation, and notably the bit in byte ordering commonly used is different than found in FIPS 46.
+You can see that in a byte wide interface there are only 8 wires in the
+Initial Permutation, and notably the bit in byte ordering commonly used is
+different than found in FIPS 46.
 
 
 Inversion Initial Permutation
 
-You can see that the Inversion Initial Permutation is identical to the Initial Permutation if the Left and Right Blocks are first order reversed:
+You can see that the Inversion Initial Permutation is identical to the
+Initial Permutation if the Left and Right Blocks are first order reversed:
 
             Output (R16L16)                                   
                                                                   MSB7      Big
@@ -90,9 +124,12 @@ You can see that the Inversion Initial Permutation is identical to the Initial P
 
                     Illustration 2:  Inverse Initial Permutation 
 
-The L and R registers would be both serially shifted in and out as well as parallel loaded and parallel out in the simplest implementation, sharing a byte wide bidirectional interface to host. You'd use the same 8 wires.
+The L and R registers would be both serially shifted in and out as well as
+parallel loaded and parallel out in the simplest implementation, sharing a
+byte wide bidirectional interface to host. You'd use the same 8 wires.
 
-You can see that the Inverse Initial Permutation (shown as IP-1 in FIPS Pub 46-3) is turned 90 degrees in the above illustration:
+You can see that the Inverse Initial Permutation (shown as IP-1 in FIPS Pub
+46-3) is turned 90 degrees in the above illustration:
 
 From FIPS Pub 46 (annotated to show byte and bit order):
 
@@ -148,33 +185,53 @@ for both encryption and decryption  (C and D registers shift in opposite
 directions as specified by PC2).  They require parallel outputs for 
 Permuted Choice 2. 
 
-In a pipelined DES we only perform the Initial Permutation and Permuted Choice 1 on the input end of the pipeline, and the Inverse Initial Permutation on the output end.
+In a pipelined DES we only perform the Initial Permutation and Permuted
+Choice 1 on the input end of the pipeline, and the Inverse Initial
+Permutation on the output end.
 
 
 The Cryptographic Function f(R,K)
 ---------------------------------
 
-The f(R,K) function expands the Right block via the E Expansion permutation, which is XORed with Permuted Choice 2 selected key according to the shift schedule and round number.
+The f(R,K) function expands the Right block via the E Expansion permutation,
+which is XORed with Permuted Choice 2 selected key according to the shift
+schedule and round number.
 
 Permuted Choice 2
 
-The C and D registers are separately rotated for each round according to the Key Schedule. The direction of shift is dependent on encryption versus decryption. The C and D registers are intended to be use for sequential block encryption or decryption and the position of the Permuted Choice 2 selection permutation tap-offs is by default the key for 16th round. As a consequence the C and D registers require pre-shifting for encryption.
+The C and D registers are separately rotated for each round according to the
+Key Schedule. The direction of shift is dependent on encryption versus
+decryption. The C and D registers are intended to be use for sequential block
+encryption or decryption and the position of the Permuted Choice 2 selection
+permutation tap-offs is by default the key for 16th round. As a consequence
+the C and D registers require pre-shifting for encryption.
 
-As a consequence of feeding the key in from the head of the pipeline the last stage C and D register outputs are not used. Describing the DEs pipeline with identical hardware for each round separated by pipeline registers we'd expect synthesis to eat unused outputs and their registers. The 16th stage is a separate entity without the key schedule and C and D outputs.
+As a consequence of feeding the key in from the head of the pipeline the last
+stage C and D register outputs are not used. Describing the DEs pipeline with
+identical hardware for each round separated by pipeline registers we'd expect
+synthesis to eat unused outputs and their registers. The 16th stage is a
+separate entity without the key schedule and C and D outputs.
 
 E Permutation
 
-The Expansion Permutation expands R to 48 bits to XOR with 48 bits of selected key provided by PC2. These 48 inputs are provided in order to 8 S Boxes.
+The Expansion Permutation expands R to 48 bits to XOR with 48 bits of
+selected key provided by PC2. These 48 inputs are provided in order to 8 S
+Boxes.
 
 S Boxes
 
-The order of inputs to the 8 S boxes means the C register influences S Boxes 1 - 4 output values while the D register influences S Boxes 5 - 8.
+The order of inputs to the 8 S boxes means the C register influences S Boxes
+1 - 4 output values while the D register influences S Boxes 5 - 8.
 
-S Boxes are organized as four columns of 16 values where each column contains all 16 possible 4 bit values.
+S Boxes are organized as four columns of 16 values where each column contains
+all 16 possible 4 bit values.
 
 P Permutation
 
-The output of the 8 S Boxes is passed through the P Permutation which mixes R bit influence across the width of R over successive rounds, whitening the range of result values along with mixing C and D register PC2 selected bits across successive rounds. 
+The output of the 8 S Boxes is passed through the P Permutation which mixes R
+bit influence across the width of R over successive rounds, whitening the
+range of result values along with mixing C and D register PC2 selected bits
+across successive rounds.
 
 Next R, Next L
 
@@ -182,15 +239,19 @@ The P output of f(R,K) is XORed with L to produce the next R value.
 
 The R value becomes the next L value.
 
-DES depends on the Left and Right swap after round 16 and the reversed key schedule (C and D shift direction) to allow the Feistal Network to 'un-peel' successive rounds for decryption.
+DES depends on the Left and Right swap after round 16 and the reversed key
+schedule (C and D shift direction) to allow the Feistal Network to 'un-peel'
+successive rounds for decryption.
 
 
 C Programs found in code_tools subdirectory
 -------------------------------------------
 
-These C programs are capable of being compiled with a C99 compliant C compiler in a POSIX environment.
+These C programs are capable of being compiled with a C99 compliant C compiler
+in a POSIX environment.
 
-There are various versions of S Box VHDL cdde generating C programs in various modeling conventions. These have all been verified.
+There are various versions of S Box VHDL cdde generating C programs in various
+modeling conventions. These have all been verified.
 
 desvec64.c    - produces FIPS Special Pub 500-20 test vectors 
 desvec.c      - byte wide interface (the original version)
@@ -207,7 +268,38 @@ des.test    - the FIPS Spec Pub test vectors, a derivative of a public work.
 VHDL Design Files
 -----------------
 
-The sbox1.vhdl - sbox8.vhdl are from a previous DES implementation. The rest of the design effort is entirely new.
+The sbox1.vhdl - sbox8.vhdl are from a previous DES implementation. The rest
+of the design effort is entirely new.
 
+This code is synthesis eligible.
 
+Building the Model
+------------------
+The included makefile uses ghdl and gtkwave for simulation and display of
+waveform dump files. The design implementation was developed on an OS X/MacOS
+platform and there are a couple of things to change to operate on other
+platforms with ghdl and gtkwave. Definintions for GHDL and GTKWAVE are shown
+in comments for Linux (Ubuntu). The active definitions can be swapped for the
+commented definitions to allow use on Linux with ghdl and gtkwave installed
+in their respective locations, or the locations can be changed. Windows use
+would require adding the exe file extension more than likely. (ghdl and
+gtkwave are available on a number of platforms).
+
+For other tools the VHDL file analysis order can be determined from the
+included Makefile or the various VHDL source code files using entity
+instantiation (e.g. entity work.frk) could be modified to use component
+declarations. The Makefile can be copied and modified for use with Nick
+Gasson's nvc by changing the waveform file target to say FST (See
+https://github.com/nickg/nvc).
+
+With ghdl and gtkwave installed and properly referenced in the current
+makefile, simple make run to validate the 500-20 testvectors or make wave to
+also display the results in gtkwave. The gtkw save file references /tmp as a
+prefix for both the gtkw save file and the ghw dump file until saved,
+allowing this to work first time with the distrbuted VHDL design
+implementation prior to modification.
+
+ghdl is capable of importing all the VHDL files (ghdl -i) and making the
+target (ghdl -m pipelined_des_tb) without the Makefile. GUI based VHDL tools
+would have similar capabilities.
 
