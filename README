@@ -70,8 +70,9 @@ Inversion Initial Permutation
 
 You can see that the Inversion Initial Permutation is identical to the Initial Permutation if the Left and Right Blocks are first order reversed:
 
-            Output (R16L16)               Standard      Big
-    Right Register (32 bits)       Block  (64 bits)                Bit      End
+            Output (R16L16)                                   
+                                                                  MSB7      Big
+    Right Register (32 bits)       OutputBlock  (64 bits)          Bit      End
  
      1  2  3  4  5  6  7  8          1  2  3  4  5  6  7  8---------6--------2
      9 10 11 12 13 14 15 16          9 10 11 12 13 14 15 16---------4--------4
@@ -202,8 +203,6 @@ sbox_swtich.c
 sboxes.c
 
 des.test    - the FIPS Spec Pub test vectors, a derivative of a public work.
-
-They are found in the code_tools subdirectory of the distribution archive.
 
 VHDL Design Files
 -----------------
